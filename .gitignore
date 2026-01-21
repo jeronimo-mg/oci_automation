@@ -1,0 +1,27 @@
+# Secrets
+oci_config
+oci_keys/
+*.key
+*.pem
+id_ed25519
+id_ed25519.pub
+
+# Logs
+*.log
+provision.log
+error.log
+
+# Temporary / Environment
+tmp_install/
+oci_env/
+test_env/
+__pycache__/
+*.pyc
+
+# Installers
+get-pip.py
+install_oci.py
+install.sh
+
+# System metadata
+*.Zone.Identifier
