@@ -1,0 +1,15 @@
+[Unit]
+Description=OCI Automation Service
+After=network.target
+
+[Service]
+Type=simple
+User=opc
+WorkingDirectory=/home/opc/oci_automation
+ExecStart=/bin/bash /home/opc/oci_automation/provision.sh
+Restart=always
+RestartSec=60
+Environment="OCI_CLI_CONFIG_FILE=/home/opc/oci_automation/oci_config"
+
+[Install]
+WantedBy=multi-user.target

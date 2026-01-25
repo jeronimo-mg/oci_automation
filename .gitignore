@@ -1,5 +1,6 @@
 # Secrets
 oci_config
+oci_config_linux
 oci_keys/
 *.key
 *.pem

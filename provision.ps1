@@ -19,8 +19,7 @@ while ($true) {
     $ErrorOutput = "$PWD\oci_error.log"
     try {
         $JOB_ID = oci resource-manager job create-apply-job --stack-id $STACK_ID --execution-plan-strategy AUTO_APPROVED --query data.id --raw-output 2> $ErrorOutput
-    }
-    catch {
+    } catch {
         Write-Host "Erro na execução do comando (provavelmente temporário):" -ForegroundColor Yellow
         if (Test-Path $ErrorOutput) {
             Get-Content $ErrorOutput | Write-Host -ForegroundColor Red
@@ -50,20 +49,16 @@ while ($true) {
             Write-Host "✅ SUCESSO! A instância foi provisionada!"
             Write-Host "Verifique o console em 'Compute > Instances'."
             exit 0
-        }
-        elseif ($STATUS -eq "FAILED") {
+        } elseif ($STATUS -eq "FAILED") {
             Write-Host "❌ Falha: Provavelmente 'Out of host capacity' (Sem estoque)."
             break
-        }
-        elseif ($STATUS -eq "CANCELED") {
+        } elseif ($STATUS -eq "CANCELED") {
             Write-Host "⚠️ Job cancelado manualmente."
             break
-        }
-        elseif ($STATUS -eq "ACCEPTED" -or $STATUS -eq "IN_PROGRESS") {
+        } elseif ($STATUS -eq "ACCEPTED" -or $STATUS -eq "IN_PROGRESS") {
             Write-Host "Status: $STATUS - Aguardando..."
             Start-Sleep -Seconds 10
-        }
-        else {
+        } else {
             Write-Host "Status desconhecido ($STATUS). Tentando novamente..."
             Start-Sleep -Seconds 10
         }

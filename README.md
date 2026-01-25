@@ -6,63 +6,56 @@ Este projeto contém scripts para automatizar o provisionamento de recursos no O
 
 * `provision.ps1`: Script em PowerShell para Windows.
 * `provision.sh`: Script em Bash para Linux/macOS.
-* `install_oci.py`: Script Python para instalação do OCI CLI (caso necessário).
-* `oci_config`: Arquivo de configuração local para o OCI CLI.
-* `oci_keys/`: Diretório contendo as chaves de API (não versionado/não incluído no repositório público por segurança).
+* `install_oci.py`: Script Python para instalação do OCI CLI.
+* `oci_config`: Arquivo de configuração local.
+* `oci_config_linux`: Arquivo de configuração adaptado para o servidor remoto.
+* `oci_automation.service`: Arquivo de serviço Systemd para execução contínua no Linux.
+* `oci_keys/`: Chaves de API (segredadas).
 
-## Pré-requisitos
+## Configuração Local (Windows)
 
-1. **OCI CLI**: Deve estar instalado e configurado no seu sistema.
-    * Verifique a instalação com: `oci --version`
-2. **Conta Oracle Cloud**: Uma conta ativa com permissões para gerenciar criar Jobs no Resource Manager.
-3. **Stack ID**: O ID do Stack (Resource Manager) que você deseja automatizar.
+1. **Chaves**: Coloque suas chaves em `oci_keys/`.
+2. **Config**: Ajuste `oci_config` com o caminho correto das chaves (ex: `c:\Users\...`).
+3. **Execução**:
 
-## Configuração
+    ```powershell
+    ./provision.ps1
+    ```
 
-1. **Chaves de API**:
-    * Coloque sua chave privada (`oci_api_key.pem`) e pública na pasta `oci_keys/`.
-    * Este diretório é ignorado pelo Git para segurança.
+    *Nota: Se houver erro de política de execução, rode: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`.*
 
-2. **Arquivo de Configuração (`oci_config`)**:
-    * Este arquivo deve conter as credenciais do seu *tenancy*, *user* e *fingerprint*.
-    * **Importante**: O caminho para o `key_file` deve ser absoluto ou ajustado conforme o seu sistema operacional.
-        * **Windows**: `key_file=c:\Caminho\Para\oci_keys\oci_api_key.pem`
-        * **Linux**: `key_file=/home/usuario/.../oci_keys/oci_api_key.pem`
+## Configuração Remota (Linux / Servidor)
 
-3. **Scripts de Provisionamento**:
-    * Edite `provision.ps1` (Windows) ou `provision.sh` (Linux) e atualize a variável `$STACK_ID` ou `STACK_ID` com o OCID do seu Stack.
+O projeto está configurado para rodar como um serviço Systemd no servidor (ex: `144.22.206.150`), garantindo execução 24/7.
 
-## Uso
+### Monitoramento de Logs
 
-### Windows
+Para ver o que o script está fazendo dentro do servidor, você precisa acessar via SSH e consultar os logs do sistema.
 
-Execute o script PowerShell:
+1. **Acesse o servidor**:
 
-```powershell
-./provision.ps1
-```
+    ```bash
+    ssh -i id_ed25519 opc@144.22.206.150
+    ```
 
-> **Nota**: Se você encontrar um erro de permissão ("excecution of scripts is disabled"), execute o seguinte comando para permitir scripts locais para o seu usuário:
->
-> ```powershell
-> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-> ```
+2. **Verifique os logs do serviço**:
+    Execute o comando abaixo para ver os logs em tempo real (role para cima/baixo se necessário):
 
-O script tentará criar um Job de "Apply" no Stack especificado. Se falhar (ex: por falta de capacidade do host), ele aguardará e tentará novamente em loop.
+    ```bash
+    sudo journalctl -u oci_automation -f
+    ```
 
-### Linux / macOS
+    * `-u oci_automation`: Filtra os logs do nosso serviço.
+    * `-f`: "Follow" (acompanha em tempo real). Pressione `Ctrl+C` para sair.
 
-Dê permissão de execução e rode o script Bash:
+3. **Verifique o status do serviço**:
 
-```bash
-chmod +x provision.sh
-./provision.sh
-```
+    ```bash
+    sudo systemctl status oci_automation
+    ```
 
-## Instalação do OCI CLI (Opcional)
+### Parar/Iniciar a Automação
 
-Se você ainda não tem o OCI CLI, pode usar o script incluído:
-
-```bash
-python install_oci.py
-```
+* Parar: `sudo systemctl stop oci_automation`
+* Iniciar: `sudo systemctl start oci_automation`
+* Reiniciar: `sudo systemctl restart oci_automation`
