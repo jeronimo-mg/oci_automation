@@ -12,7 +12,9 @@ sudo systemctl stop gdm || true
 echo "Installing Openbox and VNC..."
 # Enable EPEL 10 for Oracle Linux
 sudo dnf install -y oracle-epel-release-el10
-# Enable CRB (CodeReady Builder) - often needed for EPEL deps
+# Explicitly enable the repo we found
+sudo dnf config-manager --set-enabled ol10_u0_developer_EPEL || true
+# CRB is also needed often
 sudo dnf config-manager --set-enabled ol10_codeready_builder || sudo dnf config-manager --set-enabled crb || true
 sudo dnf makecache
 
@@ -72,9 +74,6 @@ rm -f /tmp/.X11-unix/X${DISPLAY_NUM:1}
 # Password Setup
 if [ ! -f "$PASS_FILE" ]; then
     echo "No password found. Generating default password 'antigravity'"
-    # vncpasswd expects input securely. creating file manually.
-    # Note: vncpasswd input format is tricky in scripts.
-    # Alternative: use x11vnc -storepasswd behavior if x11vnc is present, but we are using tigervnc.
     # TigerVNC `vncpasswd -f` reads from stdin and writes to stdout.
     echo "antigravity" | vncpasswd -f > "$PASS_FILE"
     chmod 600 "$PASS_FILE"
@@ -93,7 +92,6 @@ VNCSTART
 chmod +x $HOME/.vnc/xstartup
 
 # Launch Xvnc directly
-# Security types: None for local noVNC, or VncAuth
 Xvnc $DISPLAY_NUM -geometry $RESOLUTION -rfbauth "$PASS_FILE" -rfbport 5901 &
 XVNC_PID=$!
 sleep 2

@@ -38,6 +38,15 @@ while true; do
         if [ "$STATUS" == "SUCCEEDED" ]; then
             echo "✅ SUCESSO! A instância foi provisionada!"
             echo "Verifique o console em 'Compute > Instances'."
+            
+            # Tenta enviar notificação por email
+            if [ -f "send_email.py" ]; then
+                echo "Enviando notificação por email..."
+                python3 send_email.py "OCI Provisioning Success" "A instância foi provisionada com sucesso! Verifique o console da Oracle Cloud."
+            else
+                echo "Script de email não encontrado, pulando notificação."
+            fi
+
             exit 0
         elif [ "$STATUS" == "FAILED" ]; then
             echo "❌ Falha: Provavelmente 'Out of host capacity' (Sem estoque)."
